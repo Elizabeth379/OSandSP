@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include <string>
 #include "SoftwareDefinitions.h"
 #include "resource.h"
 
@@ -47,14 +48,12 @@ LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp
 		case OnMenuAction1:
 			MessageBoxA(hWnd, "Menu 1 was clicked!", "Menu worked", MB_OK);
 			break;
-		case OnMenuAction2:
-			MessageBoxA(hWnd, "Menu 2 was clicked!", "Menu worked", MB_OK);
-			break;
-		case OnMenuAction3:
-			MessageBoxA(hWnd, "Menu 3 was clicked!", "Menu worked", MB_OK);
-			break;
 		case OnClearField:
 			SetWindowTextA(hEditControl, "");
+			break;
+		case OnReadField:
+			num = GetDlgItemInt(hWnd, DigIndexNumber, FALSE, false);
+			SetWindowTextA(hStaticControl, std::to_string(num).c_str());
 			break;
 		case OnExitSoftware:
 			PostQuitMessage(0);
@@ -95,10 +94,12 @@ void MainWndAddMenus(HWND hWnd) {
 }
 
 void MainWndAddWidgets(HWND hWnd) {
-	CreateWindowA("static", "STATUS: Hello Wind!", WS_VISIBLE | WS_CHILD | ES_CENTER, 140, 5, 350, 30, hWnd, NULL, NULL, NULL);
 
+	hStaticControl = CreateWindowA("static", "STATUS: Hello Wind!", WS_VISIBLE | WS_CHILD | ES_CENTER, 200, 5, 100, 30, hWnd, NULL, NULL, NULL);
 	hEditControl = CreateWindowA("edit", "This is EDIT control!", WS_VISIBLE | WS_CHILD | ES_MULTILINE | WS_VSCROLL, 5, 40, 480, 130, hWnd, NULL, NULL, NULL);
+	hNumberControl = CreateWindowA("edit", "0", WS_VISIBLE | WS_CHILD | ES_CENTER | ES_NUMBER, 5, 170, 120, 30, hWnd, (HMENU)DigIndexNumber, NULL, NULL);
 
 	CreateWindowA("button", "Clear", WS_VISIBLE | WS_CHILD | ES_CENTER, 5, 5, 120, 30, hWnd, (HMENU)OnClearField, NULL, NULL);
+	CreateWindowA("button", "Read", WS_VISIBLE | WS_CHILD | ES_CENTER, 130, 5, 50, 30, hWnd, (HMENU)OnReadField, NULL, NULL);
 
 }
