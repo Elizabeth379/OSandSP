@@ -52,6 +52,9 @@ LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp
 		case OnMenuAction3:
 			MessageBoxA(hWnd, "Menu 3 was clicked!", "Menu worked", MB_OK);
 			break;
+		case OnClearField:
+			SetWindowTextA(hEditControl, "");
+			break;
 		case OnExitSoftware:
 			PostQuitMessage(0);
 			break;
@@ -59,9 +62,11 @@ LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp
 			break;
 
 		}
+		break;
 
 	case WM_CREATE:
 		MainWndAddMenus(hWnd);
+		MainWndAddWidgets(hWnd);
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -77,15 +82,22 @@ void MainWndAddMenus(HWND hWnd) {
 	HMENU SubMenu = CreateMenu();
 	HMENU SubActionMenu = CreateMenu();
 
-	AppendMenu(SubActionMenu, MF_STRING, OnMenuAction1, L"Menu 1");
-	AppendMenu(SubActionMenu, MF_STRING, OnMenuAction2, L"Menu 2");
-	AppendMenu(SubActionMenu, MF_STRING, OnMenuAction3, L"Menu 3");
-
+	
+	AppendMenu(SubMenu, MF_STRING, OnClearField, L"Clear");
 	AppendMenu(SubMenu, MF_SEPARATOR, NULL, NULL);
-	AppendMenu(SubMenu, MF_POPUP, (UINT_PTR)SubActionMenu, L"Action");
 	AppendMenu(SubMenu, MF_STRING, OnExitSoftware, L"Exit");
 
 	AppendMenu(RootMenu, MF_POPUP, (UINT_PTR)SubMenu, L"File");
+	AppendMenu(RootMenu, MF_STRING, (UINT_PTR)SubMenu, L"Help");
 
 	SetMenu(hWnd, RootMenu);
+}
+
+void MainWndAddWidgets(HWND hWnd) {
+	CreateWindowA("static", "STATUS: Hello Wind!", WS_VISIBLE | WS_CHILD | ES_CENTER, 140, 5, 350, 30, hWnd, NULL, NULL, NULL);
+
+	hEditControl = CreateWindowA("edit", "This is EDIT control!", WS_VISIBLE | WS_CHILD | ES_MULTILINE | WS_VSCROLL, 5, 40, 480, 130, hWnd, NULL, NULL, NULL);
+
+	CreateWindowA("button", "Clear", WS_VISIBLE | WS_CHILD | ES_CENTER, 5, 5, 120, 30, hWnd, (HMENU)OnClearField, NULL, NULL);
+
 }
