@@ -131,6 +131,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SoftwareColors.h" />
     <ClInclude Include="SoftwareDefinitions.h" />
   </ItemGroup>
   <ItemGroup>

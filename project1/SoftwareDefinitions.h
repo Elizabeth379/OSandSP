@@ -26,6 +26,10 @@ HWND hNumberControl;
 char filename[260];
 OPENFILENAMEA ofn;
 
+int colorR, colorG, colorB;
+HFONT fontRectangle;
+COLORREF fontColor;
+
 HBRUSH brushRectangle;
 RECT windowRectangle;
 PAINTSTRUCT ps;

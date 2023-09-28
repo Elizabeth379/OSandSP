@@ -1,11 +1,19 @@
 #include <Windows.h>
 #include <string>
+#include "SoftwareColors.h"
 #include "SoftwareDefinitions.h"
 #include "resource.h"
 
 
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdshow) {
+
+	fontRectangle = CreateFontA(
+		30, 10, 0, 0, FW_MEDIUM,
+		FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+		OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY,
+		FF_DECORATIVE, "SpecialFont"
+	);
 
 	WNDCLASS SoftwareMainClass = NewWindowClass((HBRUSH)COLOR_WINDOW, LoadCursor(NULL, IDC_HAND), hInst,
 		LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON1)), L"MainWndClass", SoftwareMainProcedure);
@@ -53,10 +61,14 @@ LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp
 			break;
 		case OnReadColor:
 
-			brushRectangle = CreateSolidBrush(
-			RGB(GetDlgItemInt(hWnd, DigIndexColorR, FALSE, false),
-				GetDlgItemInt(hWnd, DigIndexColorG, FALSE, false),
-				GetDlgItemInt(hWnd, DigIndexColorB, FALSE, false)));
+			colorR = GetDlgItemInt(hWnd, DigIndexColorR, FALSE, false);
+			colorG = GetDlgItemInt(hWnd, DigIndexColorG, FALSE, false);
+			colorB = GetDlgItemInt(hWnd, DigIndexColorB, FALSE, false);
+
+
+			brushRectangle = CreateSolidBrush(RGB(colorR, colorG, colorB));
+
+			fontColor = RGB(255 - colorR, 255 - colorG, 255 - colorB);
 
 			RedrawWindow(hWnd, NULL, NULL, RDW_UPDATENOW | RDW_INVALIDATE);
 
@@ -80,7 +92,13 @@ LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp
 
 		BeginPaint(hWnd, &ps);
 
-		FillRect(ps.hdc, &windowRectangle, brushRectangle);
+		//FillRect(ps.hdc, &windowRectangle, brushRectangle);
+		GradientRect(ps.hdc, &windowRectangle, Color(200,20,20), Color(20,20,200));
+
+		SetBkMode(ps.hdc, TRANSPARENT);
+		SetTextColor(ps.hdc, fontColor);
+		SelectObject(ps.hdc, fontRectangle);
+		DrawTextA(ps.hdc, "Rect text", 10, &windowRectangle, DT_SINGLELINE | DT_CENTER | DT_VCENTER | DT_NOCLIP);
 
 		EndPaint(hWnd, &ps);
 		break;
@@ -88,6 +106,8 @@ LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp
 		MainWndAddMenus(hWnd);
 		MainWndAddWidgets(hWnd);
 		SetOpenFileParams(hWnd);
+
+		SendMessageA(hStaticControl, WM_SETFONT, (WPARAM)fontRectangle, TRUE);
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
