@@ -26,12 +26,17 @@ typedef struct Color {
 };
 
 void GradientRect(HDC hDC, const RECT* lprc, Color leftColor, Color rightColor) {
+	// Вычисляем ширину прямоугольника
 	int width = lprc->left - lprc->right;
 
+	// Проходим по каждой горизонтальной координате в пределах прямоугольника
 	for (int x = lprc->right; x < lprc->left; x++) {
+		// Интерполируем цвет между левым и правым цветами на основе текущей горизонтальной позиции
 		int curColor = leftColor.Lerp(rightColor, x - lprc->right, width).toRGB();
 
+		// Проходим по каждой вертикальной координате в пределах прямоугольника
 		for (int y = lprc->top; y < lprc->bottom; y++) {
+			// Устанавливаем текущий цвет пикселя в контексте устройства (hDC)
 			SetPixel(hDC, x, y, curColor);
 		}
 	}

@@ -22,12 +22,15 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 		FF_DECORATIVE, "SpecialStaticFont"
 	);
 
+	// Создание класса окна WNDCLASS и задание его параметров
 	WNDCLASS SoftwareMainClass = NewWindowClass((HBRUSH)COLOR_WINDOW, LoadCursor(NULL, IDC_HAND), hInst,
 		LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON1)), L"MainWndClass", SoftwareMainProcedure);
 
+	// Регистрация класса окна
 	if (!RegisterClassW(&SoftwareMainClass)) { return -1; }
 	MSG SoftwareMainMessage = { 0 };
 
+	// параметр WS_OVERLAPPEDWINDOW добавляет кнопки размер, свернуть, закрыть на окно + перемещение окна + стандартные бордюр и рамка + системное меню
 	CreateWindow(L"MainWndClass", L"Text editor for kids", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 100, 100, 500, 500, NULL, NULL, NULL, NULL);
 	while (GetMessage(&SoftwareMainMessage, NULL, NULL, NULL))
 	{
@@ -102,6 +105,7 @@ LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp
 		SetBkMode(ps.hdc, TRANSPARENT);
 		SetTextColor(ps.hdc, fontColor);
 		SelectObject(ps.hdc, fontRectangle);
+		// DT_NOCLIP - если текст не влезет в прямоугольник, то выйдет за его пределы и будет виден
 		DrawTextA(ps.hdc, "Gradient text", 15, &windowRectangle, DT_SINGLELINE | DT_CENTER | DT_VCENTER | DT_NOCLIP);
 
 		EndPaint(hWnd, &ps);
@@ -142,6 +146,7 @@ void MainWndAddMenus(HWND hWnd) {
 
 void MainWndAddWidgets(HWND hWnd) {
 
+	// WS_VISIBLE - элемент видим по дефолту, WS_CHILD - элемент является дочерним от базового окна(наодится внутри этого окна)
 	hStaticControl = CreateWindowA("static", "Hello, Wind!", WS_VISIBLE | WS_CHILD | ES_CENTER, 275, 5, 100, 30, hWnd, NULL, NULL, NULL);
 	windowRectangle = { 5 + 480, 70, 5, 110 };
 	hEditControl = CreateWindowA("edit", "Write your text here", WS_VISIBLE | WS_CHILD | ES_MULTILINE | WS_VSCROLL, 5, 115, 480, 300, hWnd, NULL, NULL, NULL);
@@ -158,54 +163,74 @@ void MainWndAddWidgets(HWND hWnd) {
 }
 
 void SaveData(LPCSTR path) {
+
 	HANDLE FileToSave = CreateFileA(
-		path,
-		GENERIC_WRITE,
-		0,
-		NULL,
-		CREATE_ALWAYS,
-		FILE_ATTRIBUTE_NORMAL,
-		NULL);
+		path,                                   // Путь к файлу
+		GENERIC_WRITE,                          // Режим доступа (запись)
+		0,                                      // Флаги и атрибуты файла
+		NULL,                                   // Дескриптор безопасности (не используется)
+		CREATE_ALWAYS,                          // Действие при создании: создать новый файл или перезаписать существующий
+		FILE_ATTRIBUTE_NORMAL,                  // Атрибуты файла (обычный файл)
+		NULL                                    // Шаблон файла (не используется)
+	);
 
 	int saveLenth = GetWindowTextLength(hEditControl) + 1;
+
+	// буфер для хранения текста
 	char* data = new char[saveLenth];
 
+	// Получен текст из элемента управления и сохранен в буфере
 	saveLenth = GetWindowTextA(hEditControl, data, saveLenth);
 
+	// Переменная для отслеживания количества записанных байтов
 	DWORD bytesIterated;
+
+	// Записываем содержимое буфера data в файл
 	WriteFile(FileToSave, data, saveLenth, &bytesIterated, NULL);
 
+	// Закрываем дескриптор файла
 	CloseHandle(FileToSave);
+
 	delete[] data;
 }
+
 
 void LoadData(LPCSTR path) {
 	HANDLE FileToLoad = CreateFileA(
 		path,
-		GENERIC_READ,
+		GENERIC_READ,			// Режим доступа (чтение)
 		0,
 		NULL,
-		OPEN_EXISTING,
+		OPEN_EXISTING,            // Открыть существующий
 		FILE_ATTRIBUTE_NORMAL,
 		NULL);
 
 	DWORD bytesIterated;
 	ReadFile(FileToLoad, Buffer, TextBufferSize, &bytesIterated, NULL);
 
-	SetWindowTextA(hEditControl, Buffer);
+	SetWindowTextA(hEditControl, Buffer);  // Считываем в буфер определенное кол-во символов и выводим их в поле edit
 
 	CloseHandle(FileToLoad);
 }
 
 void SetOpenFileParams(HWND hWnd) {
+	// Обнуляем структуру ofn (OPENFILENAME) перед использованием
 	ZeroMemory(&ofn, sizeof(ofn));
+	// Устанавливаем размер структуры OPENFILENAME
 	ofn.lStructSize = sizeof(ofn);
+	// Устанавливаем окно-владелец для диалогового окна выбора файла
 	ofn.hwndOwner = hWnd;
+	// Устанавливаем указатель на строку, в которой будет сохранено имя выбранного файла
 	ofn.lpstrFile = filename;
+	// Устанавливаем максимальную длину имени файла, которую может принять указатель lpstrFile
 	ofn.nMaxFile = sizeof(filename);
+	// Устанавливаем фильтр файлов для диалогового окна (только .txt файлы)
 	ofn.lpstrFilter = "*.txt";
+	// Устанавливаем указатель на строку, в которой будет сохранено имя выбранного файла без расширения
 	ofn.lpstrFileTitle = NULL;
+	// Устанавливаем максимальную длину имени файла без расширения
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir = "C:/Users/Acer/Desktop/films/osisp-assets/files";
+	// Устанавливаем флаги для диалогового окна выбора файла (директория должна существовать и файл должен существовать)
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 }
