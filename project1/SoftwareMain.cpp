@@ -136,7 +136,6 @@ void MainWndAddMenus(HWND hWnd) {
 	AppendMenu(SubMenu, MF_STRING, OnExitSoftware, L"Exit");
 
 	AppendMenu(RootMenu, MF_POPUP, (UINT_PTR)SubMenu, L"File");
-	AppendMenu(RootMenu, MF_STRING, (UINT_PTR)SubMenu, L"Help");
 
 	SetMenu(hWnd, RootMenu);
 }
