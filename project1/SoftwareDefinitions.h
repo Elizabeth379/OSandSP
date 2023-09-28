@@ -27,7 +27,7 @@ char filename[260];
 OPENFILENAMEA ofn;
 
 int colorR, colorG, colorB;
-HFONT fontRectangle;
+HFONT fontRectangle, fontStatic;
 COLORREF fontColor;
 
 HBRUSH brushRectangle;
