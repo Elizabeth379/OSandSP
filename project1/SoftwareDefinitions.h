@@ -5,11 +5,14 @@
 #define OnMenuAction3  3
 #define OnExitSoftware 4
 #define OnClearField 5
-#define OnReadField 6
+#define OnReadColor 6
 #define OnSaveFile 7
 #define OnLoadFile 8
 
-#define DigIndexNumber 200
+#define DigIndexColorR 200
+#define DigIndexColorG 201
+#define DigIndexColorB 202
+
 
 #define TextBufferSize 256
 
@@ -22,6 +25,10 @@ HWND hNumberControl;
 
 char filename[260];
 OPENFILENAMEA ofn;
+
+HBRUSH brushRectangle;
+RECT windowRectangle;
+PAINTSTRUCT ps;
 
 LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp);
 WNDCLASS NewWindowClass(HBRUSH BGColor, HCURSOR Cursor, HINSTANCE hInst, HICON Icon, LPCWSTR Name, WNDPROC Procedure);

@@ -13,7 +13,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 	if (!RegisterClassW(&SoftwareMainClass)) { return -1; }
 	MSG SoftwareMainMessage = { 0 };
 
-	CreateWindow(L"MainWndClass", L"First c++ window", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 100, 100, 500, 250, NULL, NULL, NULL, NULL);
+	CreateWindow(L"MainWndClass", L"Текстовый редактор", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 100, 100, 500, 250, NULL, NULL, NULL, NULL);
 	while (GetMessage(&SoftwareMainMessage, NULL, NULL, NULL))
 	{
 		TranslateMessage(&SoftwareMainMessage);
@@ -51,9 +51,15 @@ LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp
 		case OnClearField:
 			SetWindowTextA(hEditControl, "");
 			break;
-		case OnReadField:
-			num = GetDlgItemInt(hWnd, DigIndexNumber, FALSE, false);
-			SetWindowTextA(hStaticControl, std::to_string(num).c_str());
+		case OnReadColor:
+
+			brushRectangle = CreateSolidBrush(
+			RGB(GetDlgItemInt(hWnd, DigIndexColorR, FALSE, false),
+				GetDlgItemInt(hWnd, DigIndexColorG, FALSE, false),
+				GetDlgItemInt(hWnd, DigIndexColorB, FALSE, false)));
+
+			RedrawWindow(hWnd, NULL, NULL, RDW_UPDATENOW | RDW_INVALIDATE);
+
 			break;
 		case OnSaveFile:
 			if (GetSaveFileNameA(&ofn)) { SaveData(filename); }
@@ -70,6 +76,14 @@ LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp
 		}
 		break;
 
+	case WM_PAINT:
+
+		BeginPaint(hWnd, &ps);
+
+		FillRect(ps.hdc, &windowRectangle, brushRectangle);
+
+		EndPaint(hWnd, &ps);
+		break;
 	case WM_CREATE:
 		MainWndAddMenus(hWnd);
 		MainWndAddWidgets(hWnd);
@@ -105,12 +119,17 @@ void MainWndAddMenus(HWND hWnd) {
 
 void MainWndAddWidgets(HWND hWnd) {
 
-	hStaticControl = CreateWindowA("static", "STATUS: Hello Wind!", WS_VISIBLE | WS_CHILD | ES_CENTER, 200, 5, 100, 30, hWnd, NULL, NULL, NULL);
-	hEditControl = CreateWindowA("edit", "This is EDIT control!", WS_VISIBLE | WS_CHILD | ES_MULTILINE | WS_VSCROLL, 5, 40, 480, 130, hWnd, NULL, NULL, NULL);
-	hNumberControl = CreateWindowA("edit", "0", WS_VISIBLE | WS_CHILD | ES_CENTER | ES_NUMBER, 5, 170, 120, 30, hWnd, (HMENU)DigIndexNumber, NULL, NULL);
+	hStaticControl = CreateWindowA("static", "STATUS: Hello Wind!", WS_VISIBLE | WS_CHILD | ES_CENTER, 250, 5, 100, 30, hWnd, NULL, NULL, NULL);
+	//hEditControl = CreateWindowA("edit", "This is EDIT control!", WS_VISIBLE | WS_CHILD | ES_MULTILINE | WS_VSCROLL, 5, 40, 480, 100, hWnd, NULL, NULL, NULL);
+	windowRectangle = { 5 + 480, 40, 5, 40 + 100 };
+
+	CreateWindowA("edit", "0", WS_VISIBLE | WS_CHILD | ES_CENTER | ES_NUMBER, 5, 170, 120, 30, hWnd, (HMENU)DigIndexColorR, NULL, NULL);
+	CreateWindowA("edit", "0", WS_VISIBLE | WS_CHILD | ES_CENTER | ES_NUMBER, 110, 170, 120, 30, hWnd, (HMENU)DigIndexColorG, NULL, NULL);
+	CreateWindowA("edit", "0", WS_VISIBLE | WS_CHILD | ES_CENTER | ES_NUMBER, 215, 170, 120, 30, hWnd, (HMENU)DigIndexColorB, NULL, NULL);
+
 
 	CreateWindowA("button", "Clear", WS_VISIBLE | WS_CHILD | ES_CENTER, 5, 5, 120, 30, hWnd, (HMENU)OnClearField, NULL, NULL);
-	CreateWindowA("button", "Read", WS_VISIBLE | WS_CHILD | ES_CENTER, 130, 5, 50, 30, hWnd, (HMENU)OnReadField, NULL, NULL);
+	CreateWindowA("button", "Set Color", WS_VISIBLE | WS_CHILD | ES_CENTER, 130, 5, 100, 30, hWnd, (HMENU)OnReadColor, NULL, NULL);
 
 }
 
