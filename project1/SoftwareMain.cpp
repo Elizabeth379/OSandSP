@@ -55,6 +55,12 @@ LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp
 			num = GetDlgItemInt(hWnd, DigIndexNumber, FALSE, false);
 			SetWindowTextA(hStaticControl, std::to_string(num).c_str());
 			break;
+		case OnSaveFile:
+			if (GetSaveFileNameA(&ofn)) { SaveData(filename); }
+			break;
+		case OnLoadFile:
+			if (GetOpenFileNameA(&ofn)) { LoadData(filename); }
+			break;
 		case OnExitSoftware:
 			PostQuitMessage(0);
 			break;
@@ -67,6 +73,7 @@ LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp
 	case WM_CREATE:
 		MainWndAddMenus(hWnd);
 		MainWndAddWidgets(hWnd);
+		SetOpenFileParams(hWnd);
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -85,6 +92,9 @@ void MainWndAddMenus(HWND hWnd) {
 	
 	AppendMenu(SubMenu, MF_STRING, OnClearField, L"Clear");
 	AppendMenu(SubMenu, MF_SEPARATOR, NULL, NULL);
+	AppendMenu(SubMenu, MF_STRING, OnSaveFile, L"Save");
+	AppendMenu(SubMenu, MF_STRING, OnLoadFile, L"Load");
+	AppendMenu(SubMenu, MF_SEPARATOR, NULL, NULL);
 	AppendMenu(SubMenu, MF_STRING, OnExitSoftware, L"Exit");
 
 	AppendMenu(RootMenu, MF_POPUP, (UINT_PTR)SubMenu, L"File");
@@ -102,4 +112,57 @@ void MainWndAddWidgets(HWND hWnd) {
 	CreateWindowA("button", "Clear", WS_VISIBLE | WS_CHILD | ES_CENTER, 5, 5, 120, 30, hWnd, (HMENU)OnClearField, NULL, NULL);
 	CreateWindowA("button", "Read", WS_VISIBLE | WS_CHILD | ES_CENTER, 130, 5, 50, 30, hWnd, (HMENU)OnReadField, NULL, NULL);
 
+}
+
+void SaveData(LPCSTR path) {
+	HANDLE FileToSave = CreateFileA(
+		path,
+		GENERIC_WRITE,
+		0,
+		NULL,
+		CREATE_ALWAYS,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL);
+
+	int saveLenth = GetWindowTextLength(hEditControl) + 1;
+	char* data = new char[saveLenth];
+
+	saveLenth = GetWindowTextA(hEditControl, data, saveLenth);
+
+	DWORD bytesIterated;
+	WriteFile(FileToSave, data, saveLenth, &bytesIterated, NULL);
+
+	CloseHandle(FileToSave);
+	delete[] data;
+}
+
+void LoadData(LPCSTR path) {
+	HANDLE FileToLoad = CreateFileA(
+		path,
+		GENERIC_READ,
+		0,
+		NULL,
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL);
+
+	DWORD bytesIterated;
+	ReadFile(FileToLoad, Buffer, TextBufferSize, &bytesIterated, NULL);
+
+	SetWindowTextA(hEditControl, Buffer);
+
+	CloseHandle(FileToLoad);
+}
+
+void SetOpenFileParams(HWND hWnd) {
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hWnd;
+	ofn.lpstrFile = filename;
+	ofn.nMaxFile = sizeof(filename);
+	ofn.lpstrFilter = "*.txt";
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = "C:/Users/Acer/Desktop/films/osisp-assets/files";
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 }
