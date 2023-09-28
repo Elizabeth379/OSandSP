@@ -1,13 +1,10 @@
 #pragma once
 
-#define OnMenuAction1  1
-#define OnMenuAction2  2
-#define OnMenuAction3  3
-#define OnExitSoftware 4
-#define OnClearField 5
-#define OnReadColor 6
-#define OnSaveFile 7
-#define OnLoadFile 8
+#define OnExitSoftware 1
+#define OnClearField 2
+#define OnReadColor 3
+#define OnSaveFile 4
+#define OnLoadFile 5
 
 #define DigIndexColorR 200
 #define DigIndexColorG 201

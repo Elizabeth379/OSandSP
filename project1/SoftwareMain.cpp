@@ -28,7 +28,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 	if (!RegisterClassW(&SoftwareMainClass)) { return -1; }
 	MSG SoftwareMainMessage = { 0 };
 
-	CreateWindow(L"MainWndClass", L"Text editor", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 100, 100, 500, 250, NULL, NULL, NULL, NULL);
+	CreateWindow(L"MainWndClass", L"Text editor for kids", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 100, 100, 500, 500, NULL, NULL, NULL, NULL);
 	while (GetMessage(&SoftwareMainMessage, NULL, NULL, NULL))
 	{
 		TranslateMessage(&SoftwareMainMessage);
@@ -60,9 +60,6 @@ LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp
 	{
 	case WM_COMMAND:
 		switch (wp) {
-		case OnMenuAction1:
-			MessageBoxA(hWnd, "Menu 1 was clicked!", "Menu worked", MB_OK);
-			break;
 		case OnClearField:
 			SetWindowTextA(hEditControl, "");
 			break;
@@ -147,8 +144,9 @@ void MainWndAddMenus(HWND hWnd) {
 void MainWndAddWidgets(HWND hWnd) {
 
 	hStaticControl = CreateWindowA("static", "Hello, Wind!", WS_VISIBLE | WS_CHILD | ES_CENTER, 275, 5, 100, 30, hWnd, NULL, NULL, NULL);
-	//hEditControl = CreateWindowA("edit", "This is EDIT control!", WS_VISIBLE | WS_CHILD | ES_MULTILINE | WS_VSCROLL, 5, 40, 480, 100, hWnd, NULL, NULL, NULL);
 	windowRectangle = { 5 + 480, 70, 5, 110 };
+	hEditControl = CreateWindowA("edit", "Write your text here", WS_VISIBLE | WS_CHILD | ES_MULTILINE | WS_VSCROLL, 5, 115, 480, 300, hWnd, NULL, NULL, NULL);
+
 
 	CreateWindowA("edit", "0", WS_VISIBLE | WS_CHILD | ES_CENTER | ES_NUMBER, 5, 40, 80, 20, hWnd, (HMENU)DigIndexColorR, NULL, NULL);
 	CreateWindowA("edit", "0", WS_VISIBLE | WS_CHILD | ES_CENTER | ES_NUMBER, 110, 40, 80, 20, hWnd, (HMENU)DigIndexColorG, NULL, NULL);
