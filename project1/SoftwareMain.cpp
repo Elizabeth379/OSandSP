@@ -117,6 +117,13 @@ LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp
 
 		SendMessageA(hStaticControl, WM_SETFONT, (WPARAM)fontStatic, TRUE);
 		break;
+	//case WM_CTLCOLORSTATIC:
+	//{
+	//	HDC hdcStatic = (HDC)wp;
+	//	SetBKColor(hdcStatic, RGB(0, 255, 0));
+	//	return (INT_PTR)CreateSolidBrush(RGB((0, 255, 0));
+	//}
+	break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
