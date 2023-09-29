@@ -30,6 +30,7 @@ COLORREF fontColor;
 HBRUSH brushRectangle;
 RECT windowRectangle;
 PAINTSTRUCT ps;
+HDC hdcStatic;
 
 LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp);
 WNDCLASS NewWindowClass(HBRUSH BGColor, HCURSOR Cursor, HINSTANCE hInst, HICON Icon, LPCWSTR Name, WNDPROC Procedure);
