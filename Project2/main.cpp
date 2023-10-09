@@ -75,22 +75,22 @@ void CompressFile(HWND hwnd) {
     ULONGLONG StartTime, EndTime;
     double TimeDuration;
 
-    //  Open input file for reading, existing file only.
+    //  Открыть входной файл для чтения, только существующий файл.
     InputFile = CreateFile(
-        sourcePath.c_str(),       //  Input file name
-        GENERIC_READ,             //  Open for reading
-        FILE_SHARE_READ,          //  Share for read
-        NULL,                     //  Default security
-        OPEN_EXISTING,            //  Existing file only
-        FILE_ATTRIBUTE_NORMAL,    //  Normal file
-        NULL);                    //  No attr. template
+        sourcePath.c_str(),       
+        GENERIC_READ,             
+        FILE_SHARE_READ,         // Разрешено совместное чтение
+        NULL,                     //  Атрибуты безопасности, стандартная безопасность
+        OPEN_EXISTING,            
+        FILE_ATTRIBUTE_NORMAL,    
+        NULL);                    //  Атрибуты шаблона не используются
 
     if (InputFile == INVALID_HANDLE_VALUE) {
         MessageBox(hwnd, L"Cannot open source file.", L"Error", MB_ICONERROR | MB_OK);
         goto done;
     }
 
-    //  Get input file size.
+    // Получить размер входного файла.
     Success = GetFileSizeEx(InputFile, &FileSize);
     if ((!Success) || (FileSize.QuadPart > 0xFFFFFFFF)) {
         MessageBox(hwnd, L"Cannot get input file size or file is larger than 4GB.", L"Error", MB_ICONERROR | MB_OK);
@@ -98,56 +98,56 @@ void CompressFile(HWND hwnd) {
     }
     InputFileSize = FileSize.LowPart;
 
-    //  Allocate memory for file content.
+    //  Выделить память для содержимого файла.
     InputBuffer = (PBYTE)malloc(InputFileSize);
     if (!InputBuffer) {
         MessageBox(hwnd, L"Cannot allocate memory for uncompressed buffer.", L"Error", MB_ICONERROR | MB_OK);
         goto done;
     }
 
-    //  Read input file.
+    //  Прочесть входной файл.
     Success = ReadFile(InputFile, InputBuffer, InputFileSize, &ByteRead, NULL);
     if ((!Success) || (ByteRead != InputFileSize)) {
         MessageBox(hwnd, L"Cannot read from source file.", L"Error", MB_ICONERROR | MB_OK);
         goto done;
     }
 
-    //  Open an empty file for writing, if exist, overwrite it.
+    // Открыть файл для записи, если существует - перезаписать
     CompressedFile = CreateFile(
-        destPath.c_str(),         //  Compressed file name
-        GENERIC_WRITE | DELETE,   //  Open for writing; delete if cannot compress
-        0,                        //  Do not share
-        NULL,                     //  Default security
-        CREATE_ALWAYS,            //  Create a new file; if exist, overwrite it
-        FILE_ATTRIBUTE_NORMAL,    //  Normal file
-        NULL);                    //  No template
+        destPath.c_str(),         
+        GENERIC_WRITE | DELETE,   //  Открыть для чтения; удалить, если нельзя сжать
+        0,                        
+        NULL,                    
+        CREATE_ALWAYS,            
+        FILE_ATTRIBUTE_NORMAL,    
+        NULL);                    
 
     if (CompressedFile == INVALID_HANDLE_VALUE) {
         MessageBox(hwnd, L"Cannot create compressed file.", L"Error", MB_ICONERROR | MB_OK);
         goto done;
     }
 
-    //  Create an XpressHuff compressor.
+    //  Создать XpressHuff compressor.
     Success = CreateCompressor(
-        COMPRESS_ALGORITHM_XPRESS_HUFF, //  Compression Algorithm
-        NULL,                           //  Optional allocation routine
-        &Compressor);                   //  Handle
+        COMPRESS_ALGORITHM_XPRESS_HUFF, //  алгоритм сжатия
+        NULL,                           //  параметр для опционального аллокатора памяти
+        &Compressor);                   
 
     if (!Success) {
         MessageBox(hwnd, L"Cannot create a compressor.", L"Error", MB_ICONERROR | MB_OK);
         goto done;
     }
 
-    //  Query compressed buffer size.
+    //  Запросить размер сжатого буфера.
     Success = Compress(
-        Compressor,                  //  Compressor Handle
-        InputBuffer,                 //  Input buffer, Uncompressed data
-        InputFileSize,               //  Uncompressed data size
-        NULL,                        //  Compressed Buffer
-        0,                           //  Compressed Buffer size
-        &CompressedBufferSize);      //  Compressed Data size
+        Compressor,                  //  Обработчик компрессора
+        InputBuffer,                 //  Буфер ввода, несжатые данные
+        InputFileSize,               //  Размер несжатых данных
+        NULL,                        //  Буфер сжатых данных
+        0,                           //  Размер буфера для сжатых данных
+        &CompressedBufferSize);      //  Размер сжатых данных
 
-    //  Allocate memory for compressed buffer.
+    //  Выделить память для сжатого буфера.
     if (!Success) {
         DWORD ErrorCode = GetLastError();
 
@@ -165,15 +165,15 @@ void CompressFile(HWND hwnd) {
 
     StartTime = GetTickCount64();
 
-    //  Call Compress() again to do real compression and output the compressed
-    //  data to CompressedBuffer.
+    //  Вызовите Compress() еще раз для выполнения реального сжатия и вывода сжатых 
+    //  данных в CompressedBuffer.
     Success = Compress(
-        Compressor,               //  Compressor Handle
-        InputBuffer,              //  Input buffer, Uncompressed data
-        InputFileSize,            //  Uncompressed data size
-        CompressedBuffer,         //  Compressed Buffer
-        CompressedBufferSize,     //  Compressed Buffer size
-        &CompressedDataSize);     //  Compressed Data size
+        Compressor,               //  Обработчик компрессора
+        InputBuffer,              //  Буфер ввода, несжатые данные
+        InputFileSize,            //  Размер несжатых данных
+        CompressedBuffer,         //  Буфер сжатых данных
+        CompressedBufferSize,     //  Размер буфера для сжатых данных
+        &CompressedDataSize);     //  Размер сжатых данных
 
     if (!Success) {
         MessageBox(hwnd, L"Cannot compress data.", L"Error", MB_ICONERROR | MB_OK);
@@ -182,16 +182,16 @@ void CompressFile(HWND hwnd) {
 
     EndTime = GetTickCount64();
 
-    //  Get compression time.
+    //  Получить время сжатия.
     TimeDuration = (EndTime - StartTime) / 1000.0;
 
-    //  Write compressed data to output file.
+    //  Записать сжатые данные в выходной файл.
     Success = WriteFile(
-        CompressedFile,     //  File handle
-        CompressedBuffer,   //  Start of data to write
-        CompressedDataSize, //  Number of byte to write
-        &ByteWritten,       //  Number of byte written
-        NULL);              //  No overlapping structure
+        CompressedFile,     //  Дескриптор файла
+        CompressedBuffer,   //  Начало данных для записи
+        CompressedDataSize, //  Количество байт для записи
+        &ByteWritten,       //  Количество записанных байт
+        NULL);              //  Нет структуры перекрытия
 
     if ((ByteWritten != CompressedDataSize) || (!Success)) {
         MessageBox(hwnd, L"Cannot write compressed data to file.", L"Error", MB_ICONERROR | MB_OK);
@@ -225,10 +225,10 @@ done:
     }
 
     if (CompressedFile != INVALID_HANDLE_VALUE) {
-        //  Compression fails, delete the compressed file.
+        //  Сжатие не удалось, удалить сжатый файл.
         if (DeleteTargetFile) {
             FILE_DISPOSITION_INFO fdi;
-            fdi.DeleteFile = TRUE;  //  Marking for deletion
+            fdi.DeleteFile = TRUE;  //  Пометка для удаления
             Success = SetFileInformationByHandle(
                 CompressedFile,
                 FileDispositionInfo,
@@ -269,22 +269,22 @@ void DecompressFile(HWND hwnd) {
     double TimeDuration;
 
 
-    //  Open input file for reading, existing file only.
+    //  Открыть для чтения только существующий файл
     InputFile = CreateFile(
-        sourcePath.c_str(),                  //  Input file name, compressed file
-        GENERIC_READ,             //  Open for reading
-        FILE_SHARE_READ,          //  Share for read
-        NULL,                     //  Default security
-        OPEN_EXISTING,            //  Existing file only
-        FILE_ATTRIBUTE_NORMAL,    //  Normal file
-        NULL);                    //  No template
+        sourcePath.c_str(),                  
+        GENERIC_READ,            
+        FILE_SHARE_READ,         
+        NULL,                     
+        OPEN_EXISTING,            
+        FILE_ATTRIBUTE_NORMAL,    
+        NULL);                   
 
     if (InputFile == INVALID_HANDLE_VALUE) {
         MessageBox(hwnd, L"Cannot open source file!", L"Error", MB_ICONERROR);
         goto done;
     }
 
-    //  Get compressed file size.
+    // Получить размер сжатого файла.
     Success = GetFileSizeEx(InputFile, &FileSize);
     if ((!Success) || (FileSize.QuadPart > 0xFFFFFFFF))
     {
@@ -293,7 +293,7 @@ void DecompressFile(HWND hwnd) {
     }
     InputFileSize = FileSize.LowPart;
 
-    //  Allocation memory for compressed content.
+    //  Выделение памяти под сжатые данные.
     CompressedBuffer = (PBYTE)malloc(InputFileSize);
     if (!CompressedBuffer)
     {
@@ -301,7 +301,7 @@ void DecompressFile(HWND hwnd) {
         goto done;
     }
 
-    //  Read compressed content into buffer.
+    //  Прочитать сжатые данные в буфер.
     Success = ReadFile(InputFile, CompressedBuffer, InputFileSize, &ByteRead, NULL);
     if ((!Success) || (ByteRead != InputFileSize))
     {
@@ -309,15 +309,15 @@ void DecompressFile(HWND hwnd) {
         goto done;
     }
 
-    //  Open an empty file for writing, if exist, destroy it.
+    //  Открыть пустой файл для записи, если существует - перезапис
     DecompressedFile = CreateFile(
-        destPath.c_str(),                  //  Decompressed file name
-        GENERIC_WRITE | DELETE,     //  Open for writing
-        0,                        //  Do not share
-        NULL,                     //  Default security
-        CREATE_ALWAYS,            //  Create a new file, if exists, overwrite it.
-        FILE_ATTRIBUTE_NORMAL,    //  Normal file
-        NULL);                    //  No template
+        destPath.c_str(),                  
+        GENERIC_WRITE | DELETE,     
+        0,                        
+        NULL,                     
+        CREATE_ALWAYS,            
+        FILE_ATTRIBUTE_NORMAL,    
+        NULL);                   
 
     if (DecompressedFile == INVALID_HANDLE_VALUE)
     {
@@ -325,11 +325,11 @@ void DecompressFile(HWND hwnd) {
         goto done;
     }
 
-    //  Create an XpressHuff decompressor.
+    //  Создать XpressHuff распаковщик.
     Success = CreateDecompressor(
-        COMPRESS_ALGORITHM_XPRESS_HUFF, //  Compression Algorithm
-        NULL,                           //  Optional allocation routine
-        &Decompressor);                 //  Handle
+        COMPRESS_ALGORITHM_XPRESS_HUFF, //  алгоритм сжатия
+        NULL,                           //  параметр для опционального аллокатора памяти
+        &Decompressor);                 
 
     if (!Success)
     {
@@ -337,23 +337,23 @@ void DecompressFile(HWND hwnd) {
         goto done;
     }
 
-    //  Query decompressed buffer size.
+    //  Запросить размер распаковочного буфера.
     Success = Decompress(
-        Decompressor,                //  Compressor Handle
-        CompressedBuffer,            //  Compressed data
-        InputFileSize,               //  Compressed data size
-        NULL,                        //  Buffer set to NULL
-        0,                           //  Buffer size set to 0
-        &DecompressedBufferSize);    //  Decompressed Data size
+        Decompressor,                //  дескриптор компрессора
+        CompressedBuffer,            
+        InputFileSize,               
+        NULL,                        //  Буфер установлен в NULL
+        0,                           //  Buffer size в 0
+        &DecompressedBufferSize);    //  Размер данных распаковки
 
-    //  Allocate memory for decompressed buffer.
+    // Выделение памяти для распаковочного буфера.
     if (!Success)
     {
         DWORD ErrorCode = GetLastError();
 
-        // Note that the original size returned by the function is extracted 
-        // from the buffer itself and should be treated as untrusted and tested
-        // against reasonable limits.
+        // Первоначальный размер, возвращаемый функцией,
+        // извлекается из самого буфера и должен рассматриваться как ненадежный и проверяться
+        // на разумные пределы.
         if (ErrorCode != ERROR_INSUFFICIENT_BUFFER)
         {
             MessageBox(hwnd, L"Cannot decompress data", L"Error", MB_ICONERROR);
@@ -371,14 +371,14 @@ void DecompressFile(HWND hwnd) {
 
     StartTime = GetTickCount64();
 
-    //  Decompress data and write data to DecompressedBuffer.
+    //  Распаковка данных и их запись в DecompressedBuffer.
     Success = Decompress(
-        Decompressor,               //  Decompressor handle
-        CompressedBuffer,           //  Compressed data
-        InputFileSize,              //  Compressed data size
-        DecompressedBuffer,         //  Decompressed buffer
-        DecompressedBufferSize,     //  Decompressed buffer size
-        &DecompressedDataSize);     //  Decompressed data size
+        Decompressor,               //  дескриптор распаковщика
+        CompressedBuffer,           //  сжатые данные
+        InputFileSize,              //  размер сжатых данных
+        DecompressedBuffer,         //  буфер распаковки
+        DecompressedBufferSize,     //  размер буфера распаковки
+        &DecompressedDataSize);     //  размер распакованных данных
 
     if (!Success)
     {
@@ -388,16 +388,16 @@ void DecompressFile(HWND hwnd) {
 
     EndTime = GetTickCount64();
 
-    //  Get decompression time.
+    //  Получение времени распаковки.
     TimeDuration = (EndTime - StartTime) / 1000.0;
 
-    //  Write decompressed data to output file.
+    //  Записать распакованные данные в выходной файл.
     Success = WriteFile(
-        DecompressedFile,       //  File handle
-        DecompressedBuffer,     //  Start of data to write
-        DecompressedDataSize,   //  Number of byte to write
-        &ByteWritten,           //  Number of byte written
-        NULL);                  //  No overlapping structure
+        DecompressedFile,       
+        DecompressedBuffer,     //  Начало данных для записи
+        DecompressedDataSize,   //  Количество байт для записи
+        &ByteWritten,           //  КОличество записанных байт
+        NULL);                  // Нет структуры перекрытия
     if ((ByteWritten != DecompressedDataSize) || (!Success))
     {
         MessageBox(hwnd, L"Cannot write to destination file!", L"Error", MB_ICONERROR);
@@ -437,11 +437,11 @@ done:
 
     if (DecompressedFile != INVALID_HANDLE_VALUE)
     {
-        //  Compression fails, delete the compressed file.
+        //  Распаковка не удалась, удалить файл
         if (DeleteTargetFile)
         {
             FILE_DISPOSITION_INFO fdi;
-            fdi.DeleteFile = TRUE;      //  Marking for deletion
+            fdi.DeleteFile = TRUE;      //  Пометка для удаления
             Success = SetFileInformationByHandle(
                 DecompressedFile,
                 FileDispositionInfo,
