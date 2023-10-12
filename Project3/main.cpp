@@ -11,11 +11,13 @@ double result = 0.0;
 double inputX = 0.0;  // Добавлено для хранения введенного значения x
 HANDLE mutex;
 std::atomic<bool> exitFlag(false);
+std::vector<double> inputPoints;
+
 
 // Переменная для отслеживания предыдущего результата
 double previousResult = 0.0;
 
-void CalculateExponential(double x, HWND hInputEdit) {
+void CalculateExponential(double x, HWND hInputEdit, HWND hWnd) {
     while (true) {
         // Захватываем мьютекс
         WaitForSingleObject(mutex, INFINITE);
@@ -31,6 +33,8 @@ void CalculateExponential(double x, HWND hInputEdit) {
 
         // Сохраняем введенное значение x
         inputX = x;
+        // Сохраняем введенное значение x
+        inputPoints.push_back(x);
 
         // Отправляем сообщение для установки текста в поле ввода только при изменении результата
         if (result != previousResult) {
@@ -40,7 +44,7 @@ void CalculateExponential(double x, HWND hInputEdit) {
             SetWindowText(hInputEdit, std::to_wstring(result).c_str());
 
             // Перерисовываем окно
-            InvalidateRect(hInputEdit, NULL, TRUE);
+            InvalidateRect(hWnd, NULL, TRUE);
         }
 
         // Освобождаем мьютекс
@@ -50,6 +54,7 @@ void CalculateExponential(double x, HWND hInputEdit) {
         std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     }
 }
+
 
 
 
@@ -65,7 +70,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 double x = _ttof(buffer);
 
                 // Запускаем потоки для вычисления
-                threads.emplace_back(CalculateExponential, x, GetDlgItem(hWnd, 0));
+                threads.emplace_back(CalculateExponential, x, GetDlgItem(hWnd, 0), hWnd);
             }
         }
         break;
@@ -106,10 +111,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             double y = exp(x / 50.0) * 50.0;  // Экспоненциальная функция, масштабированная для лучшей видимости
             LineTo(hdc, i, clientRect.bottom - static_cast<int>(y));
         }
-
-        // Рисуем точку посчитанного значения
-        Ellipse(hdc, static_cast<int>(inputX), clientRect.bottom - static_cast<int>(result),
-            static_cast<int>(inputX) + 5, clientRect.bottom - static_cast<int>(result) + 5);
+        // Рисуем точки введенных значений
+        for (double x : inputPoints) {
+            Ellipse(hdc, static_cast<int>(x), clientRect.bottom - static_cast<int>(exp(x / 50.0) * 50.0),
+                static_cast<int>(x) + 5, clientRect.bottom - static_cast<int>(exp(x / 50.0) * 50.0) + 5);
+        }
 
         // Очищаем ресурсы
         SelectObject(hdc, hOldPen);
