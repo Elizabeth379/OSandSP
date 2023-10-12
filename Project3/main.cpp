@@ -16,9 +16,15 @@ std::atomic<bool> exitFlag(false);
 double previousResult = 0.0;
 
 void CalculateExponential(double x, HWND hInputEdit) {
-    while (!exitFlag) {
+    while (true) {
         // Захватываем мьютекс
         WaitForSingleObject(mutex, INFINITE);
+
+        // Проверяем флаг завершения
+        if (exitFlag) {
+            ReleaseMutex(mutex);
+            break;
+        }
 
         // Имитация долгой операции
         result = exp(x);
@@ -44,6 +50,7 @@ void CalculateExponential(double x, HWND hInputEdit) {
         std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     }
 }
+
 
 
 
