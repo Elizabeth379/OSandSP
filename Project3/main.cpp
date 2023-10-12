@@ -41,7 +41,7 @@ void CalculateExponential(double x, HWND hInputEdit) {
         ReleaseMutex(mutex);
 
         // Даем немного времени, чтобы обновление успело произойти перед следующей итерацией
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     }
 }
 
