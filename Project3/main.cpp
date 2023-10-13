@@ -156,7 +156,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     // Создание окна
-    HWND hWnd = CreateWindow(szWindowClass, _T("Win32App"), WS_OVERLAPPEDWINDOW,
+    HWND hWnd = CreateWindow(szWindowClass, _T("Exponential function"), WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, NULL, NULL, hInstance, NULL);
 
     if (!hWnd) {
