@@ -12,6 +12,7 @@ const int IDC_COMPRESS_BUTTON = 101;
 const int IDC_DECOMPRESS_BUTTON = 102;
 
 std::wstring GetOpenFileName(HWND hwnd) {
+    // Структура для хранения параметров диалога открытия файла
     OPENFILENAME ofn;
     wchar_t szFileName[MAX_PATH] = L"";
 
@@ -19,10 +20,10 @@ std::wstring GetOpenFileName(HWND hwnd) {
     ofn.lStructSize = sizeof(ofn);
     ofn.hwndOwner = hwnd;
     ofn.lpstrFilter = L"All Files (*.*)\0*.*\0";
-    ofn.lpstrFile = szFileName;
-    ofn.nMaxFile = sizeof(szFileName) / sizeof(*szFileName);
+    ofn.lpstrFile = szFileName;      // Буфер для сохранения выбранного пути
+    ofn.nMaxFile = sizeof(szFileName) / sizeof(*szFileName);    // Максимальная длина буфера
     ofn.lpstrTitle = L"Select a file";
-    ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST;
+    ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST;  // Файл не добавляется в список недавно открытых файлов (MRU list), должен существовать
 
     if (GetOpenFileName(&ofn)) {
         return szFileName;
@@ -42,7 +43,7 @@ std::wstring GetSaveFileName(HWND hwnd) {
     ofn.lpstrFile = szFileName;
     ofn.nMaxFile = sizeof(szFileName) / sizeof(*szFileName);
     ofn.lpstrTitle = L"Save As";
-    ofn.Flags = OFN_DONTADDTORECENT | OFN_OVERWRITEPROMPT;
+    ofn.Flags = OFN_DONTADDTORECENT | OFN_OVERWRITEPROMPT; // -//-, Если пользователь выберет существующий, то система сначала спросит, хочет ли он его перезаписать
 
     if (GetSaveFileName(&ofn)) {
         return szFileName;
@@ -225,17 +226,16 @@ done:
     }
 
     if (CompressedFile != INVALID_HANDLE_VALUE) {
-        //  Сжатие не удалось, удалить сжатый файл.
-        if (DeleteTargetFile) {
+        if (DeleteTargetFile) {         //  Сжатие не удалось, удалить сжатый файл.
             FILE_DISPOSITION_INFO fdi;
             fdi.DeleteFile = TRUE;  //  Пометка для удаления
-            Success = SetFileInformationByHandle(
+            Success = SetFileInformationByHandle( //Устанавливаем информацию о том, что файл должен быть удален
                 CompressedFile,
                 FileDispositionInfo,
                 &fdi,
                 sizeof(FILE_DISPOSITION_INFO));
             if (!Success) {
-                MessageBox(hwnd, L"Cannot delete corrupted compressed file.", L"Error", MB_ICONERROR | MB_OK);
+                MessageBox(hwnd, L"Cannot delete corrupted compressed file.", L"Error", MB_ICONERROR | MB_OK); // Выводит сообщение об ошибке, если не удалось установить информацию о файле
             }
         }
         CloseHandle(CompressedFile);
