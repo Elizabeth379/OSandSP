@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <compressapi.h>
+#include <codecvt>
 
 #pragma comment(lib, "WindowsApp.lib")
 
@@ -57,8 +58,11 @@ void CompressFile(HWND hwnd) {
     if (sourcePath.empty()) {
         return; // Пользователь отменил выбор файла
     }
+    const char* path = "C:\\Users\\Acer\\Downloads\\test\\1";
 
-    std::wstring destPath = GetSaveFileName(hwnd);
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+
+    std::wstring destPath = converter.from_bytes(path);
     if (destPath.empty()) {
         return; // Пользователь отменил выбор места сохранения файла
     }
