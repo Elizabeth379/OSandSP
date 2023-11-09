@@ -7,6 +7,7 @@
 // Глобальный флаг для отслеживания сохранения файла
 bool fileSaved = false;
 HANDLE mutex; // Глобальный мьютекс для синхронизации доступа к файлу
+HANDLE fileSavedMutex; // мьютекс для синхронизации доступа к флагу fileSaved
 
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdshow) {
@@ -18,6 +19,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 		MessageBox(NULL, L"Failed to create mutex.", L"Error", MB_ICONERROR | MB_OK);
 		return -1;
 	}
+
+	fileSavedMutex = CreateMutex(NULL, FALSE, NULL);
 
 	fontRectangle = CreateFontA(
 		60, 20, 0, 0, FW_MEDIUM,
@@ -211,7 +214,9 @@ void SaveData(LPCSTR path) {
 		WriteFile(FileToSave, data, saveLength, &bytesIterated, NULL);
 
 		CloseHandle(FileToSave);
+		WaitForSingleObject(fileSavedMutex, INFINITE);
 		fileSaved = true;
+		ReleaseMutex(fileSavedMutex);
 	}
 
 	// Освобождаем мьютекс после завершения операции
@@ -236,13 +241,15 @@ void LoadData(LPCSTR path) {
 		DWORD bytesIterated;
 		ReadFile(FileToLoad, Buffer, TextBufferSize, &bytesIterated, NULL);
 
+		WaitForSingleObject(fileSavedMutex, INFINITE);
 		// Очищаем поле ввода, если файл был сохранен
 		if (fileSaved) {
 			SetWindowTextA(hEditControl, "");
 			fileSaved = false;
 		}
-		SetWindowTextA(hEditControl, "");
+		ReleaseMutex(fileSavedMutex);
 
+		SetWindowTextA(hEditControl, "");
 		// Записываем данные из файла в поле ввода
 		SetWindowTextA(hEditControl, Buffer);
 
@@ -252,6 +259,7 @@ void LoadData(LPCSTR path) {
 	// Освобождаем мьютекс после завершения операции
 	ReleaseMutex(mutex);
 }
+
 
 void SetOpenFileParams(HWND hWnd) {
 	// Обнуляем структуру ofn (OPENFILENAME) перед использованием
@@ -276,11 +284,15 @@ void SetOpenFileParams(HWND hWnd) {
 }
 
 void SaveDataThread(LPCSTR path) {
-	std::thread saveThread(SaveData, path);
-	saveThread.detach(); // Отсоединяем поток, чтобы он работал асинхронно
+	HANDLE saveThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)SaveData, (LPVOID)path, 0, NULL);
+	if (saveThread != NULL) {
+		CloseHandle(saveThread); // Закрываем дескриптор потока, т.к. мы больше не будем его использовать
+	}
 }
 
 void LoadDataThread(LPCSTR path) {
-	std::thread loadThread(LoadData, path);
-	loadThread.detach(); // Отсоединяем поток, чтобы он работал асинхронно
+	HANDLE loadThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)LoadData, (LPVOID)path, 0, NULL);
+	if (loadThread != NULL) {
+		CloseHandle(loadThread); // Закрываем дескриптор потока, т.к. мы больше не будем его использовать
+	}
 }
