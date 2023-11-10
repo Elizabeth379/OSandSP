@@ -21,6 +21,11 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 	}
 
 	fileSavedMutex = CreateMutex(NULL, FALSE, NULL);
+	if (fileSavedMutex == NULL) {
+		// Обработка ошибки при создании мьютекса
+		MessageBox(NULL, L"Failed to create fileSavedMutex.", L"Error", MB_ICONERROR | MB_OK);
+		return -1;
+	}
 
 	fontRectangle = CreateFontA(
 		60, 20, 0, 0, FW_MEDIUM,
