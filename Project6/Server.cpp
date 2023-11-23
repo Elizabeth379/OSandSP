@@ -88,15 +88,16 @@ int main() {
             recvbuf[iResult] = '\0'; // Null-terminate the received data
             std::cout << "Received message from client: " << recvbuf << std::endl;
 
-            // Echo the message back to the client
-            iResult = send(ClientSocket, recvbuf, iResult, 0);
+            // Get user input and send to the client
+            std::cout << "Enter message to send to client: ";
+            std::cin.getline(recvbuf, sizeof(recvbuf));
+            iResult = send(ClientSocket, recvbuf, strlen(recvbuf), 0);
             if (iResult == SOCKET_ERROR) {
                 std::cerr << "send failed with error: " << WSAGetLastError() << std::endl;
                 closesocket(ClientSocket);
                 WSACleanup();
                 return 1;
             }
-            std::cout << "Sent message back to client: " << recvbuf << std::endl;
         }
         else if (iResult == 0) {
             std::cout << "Connection closed by client\n";
@@ -108,18 +109,6 @@ int main() {
             WSACleanup();
             return 1;
         }
-
-        // Get user input and send to the client
-        std::cout << "Enter message to send to client: ";
-        std::cin.getline(recvbuf, sizeof(recvbuf));
-        iResult = send(ClientSocket, recvbuf, strlen(recvbuf), 0);
-        if (iResult == SOCKET_ERROR) {
-            std::cerr << "send failed with error: " << WSAGetLastError() << std::endl;
-            closesocket(ClientSocket);
-            WSACleanup();
-            return 1;
-        }
-        std::cout << "Sent message to client: " << recvbuf << std::endl;
 
     } while (true);
 
