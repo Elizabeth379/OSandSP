@@ -12,7 +12,7 @@
 #define DEFAULT_PORT "27015"
 
 int main(int argc, char** argv) {
-    WSADATA wsaData;
+    WSADATA wsaData; // Информация о состоянии Winsock
     int iResult;
 
     SOCKET ConnectSocket = INVALID_SOCKET;
@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    iResult = WSAStartup(MAKEWORD(2, 2), &wsaData); // Инициализация библиотеки для сокетов
     if (iResult != 0) {
         std::cerr << "WSAStartup failed with error: " << iResult << std::endl;
         return 1;
